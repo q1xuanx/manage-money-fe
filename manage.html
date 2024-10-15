@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quản lý chi tiêu</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous" />
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</head>
+
+<body class="container" style="
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+        Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue',
+        sans-serif;
+    ">
+    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+        <div class="container-fluid">
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="manage.html">Manage</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <main class="container mt-5">
+        <h2>Quản lý chi tiêu</h2>
+        <button class="btn btn-primary" data-toggle="modal" data-target="#addUserModal">
+            Thêm Người Dùng
+        </button>
+        <table class="table table-striped mt-3 table-responsive">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Tên</th>
+                    <th>Email</th>
+                    <th>Số tiền</th>
+                    <th>Ngày mượn</th>
+                </tr>
+            </thead>
+            <tbody id="userTableBody"></tbody>
+        </table>
+        <div class="footer">
+            <p id="totals">Tổng số tiền:</p>
+        </div>
+    </main>
+    <footer class="container d-flex justify-content-center">
+        <blockquote class="blockquote">
+            <p>Hoàng Nhân @ 2024</p>
+        </blockquote>
+    </footer>
+    <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addUserModalLabel">
+                        Thêm Người Dùng Mới
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="userName">Tên Người Dùng</label>
+                        <input type="text" class="form-control" id="userName" placeholder="Nhập tên người dùng" />
+                    </div>
+                    <div class="form-group">
+                        <label for="userName">Email người dùng</label>
+                        <input type="text" class="form-control" id="emailUser" placeholder="Nhập email" />
+                    </div>
+                    <div class="input-group">
+                        <input type="number" class="form-control" id="moneyUser" placeholder="Nhập số tiền" />
+                        <span class="input-group-text">đ</span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        Đóng
+                    </button>
+                    <button type="button" class="btn btn-primary" id="addUserButton">
+                        Thêm Người Dùng
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="traModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addUserModalLabel">
+                        Update Số Tiền Đã Trả
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="idTra">Id Người Dùng</label>
+                        <input type="text" class="form-control" id="idTra" placeholder="id" readonly />
+                    </div>
+                    <div class="form-group">
+                        <label for="soTienTra">Số tiền</label>
+                        <input type="number" class="form-control" id="soTienTra" placeholder="Nhập số tiền" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        Đóng
+                    </button>
+                    <button type="button" class="btn btn-primary" id="updateButton">
+                        Update
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        async function loadData() {
+            const response = await fetch("http://localhost:8080/");
+            const result = await response.json();
+            refreshTable(result.data);
+            const getTotal = await fetch("http://localhost:8080/totals");
+            const totals = await getTotal.json();
+            const total = document.getElementById("totals");
+            total.textContent = "Tổng số tiền: " + totals.data;
+        }
+        document.getElementById("addUserButton").addEventListener("click", async () => {
+            var userName = document.getElementById("userName").value;
+            var email = document.getElementById("emailUser").value;
+            var money = document.getElementById("moneyUser").value;
+            if (userName && email && money) {
+                const dataSend = {
+                    nameUser: userName,
+                    money: money,
+                    email: email,
+                };
+                const postData = await fetch("http://localhost:8080/create", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(dataSend),
+                });
+                const res = await postData.json;
+                if (postData.code == 200) {
+                    alert("Thêm dữ liệu thành công");
+                }
+                $("#addUserModal").modal("hide");
+                loadData();
+                document.getElementById("userName").value = "";
+            } else {
+                alert("Thiếu dữ liệu");
+            }
+        });
+        function refreshTable(users) {
+            const tableBody = document.getElementById("userTableBody");
+            tableBody.innerHTML = "";
+            users.forEach((user) => {
+                const row = document.createElement("tr");
+                const idCell = document.createElement("td");
+                idCell.textContent = user.id;
+                const nameCell = document.createElement("td");
+                nameCell.textContent = user.nameUser;
+                const emailCell = document.createElement("td");
+                emailCell.textContent = user.email;
+                const moneyCell = document.createElement("td");
+                moneyCell.textContent = user.money;
+                const dateLendCell = document.createElement("td");
+                dateLendCell.textContent = new Date(user.dateLend).toLocaleString(); // Định dạng ngày tháng
+                const updateCell = document.createElement("td");
+                updateCell.className = "button-group";
+                const updateButton = document.createElement("button");
+                updateButton.textContent = "Cập nhật";
+                updateButton.className = "btn btn-warning";
+                updateButton.onclick = () => {
+                    $("#traModal").modal("show");
+                    const id = document.getElementById("idTra");
+                    id.value = user.id;
+                    const money = document.getElementById("soTienTra");
+                    money.value = user.money;
+                    document
+                        .getElementById("updateButton")
+                        .addEventListener("click", async () => {
+                            const mn = document.getElementById("soTienTra").value;
+                            const id = document.getElementById("idTra").value;
+                            const put = await fetch(
+                                `http://localhost:8080/update/${id}/${mn}`,
+                                {
+                                    method: "PUT",
+                                }
+                            );
+                            const updated = await put.json();
+                            if (updated.code == 200) {
+                                alert("Update thành công");
+                                loadData();
+                                $("#traModal").modal("hide");
+                            }
+                        });
+                };
+                const remindBtn = document.createElement("button");
+                remindBtn.textContent = "Remind";
+                remindBtn.className = "btn btn-info ml-2";
+                remindBtn.onclick = async () => {
+                    const post = await fetch(`http://localhost:8080/remind/${user.id}`);
+                    const reminded = await post.json();
+                    if (reminded.code == 200) {
+                        alert("Đã nhắc nhở: " + user.nameUser);
+                    }
+                };
+                updateCell.appendChild(updateButton);
+                updateCell.appendChild(remindBtn);
+                row.appendChild(idCell);
+                row.appendChild(nameCell);
+                row.appendChild(emailCell);
+                row.appendChild(moneyCell);
+                row.appendChild(dateLendCell);
+                row.appendChild(updateCell);
+                tableBody.appendChild(row);
+            });
+        }
+        window.onload = loadData;
+    </script>
+</body>
+
+</html>
