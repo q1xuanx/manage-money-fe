@@ -18,7 +18,7 @@
         Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue',
         sans-serif;
     ">
-    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+    <nav class="navbar navbar-expand bg-body-tertiary">
         <div class="container-fluid">
             <div class="collapse navbar-collapse">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
@@ -128,10 +128,10 @@
     </div>
     <script>
         async function loadData() {
-            const response = await fetch("http://localhost:8080/");
+            const response = await fetch("https://manage-money-1ysn.onrender.com/");
             const result = await response.json();
             refreshTable(result.data);
-            const getTotal = await fetch("http://localhost:8080/totals");
+            const getTotal = await fetch("https://manage-money-1ysn.onrender.com/totals");
             const totals = await getTotal.json();
             const total = document.getElementById("totals");
             total.textContent = "Tổng số tiền: " + totals.data;
@@ -146,7 +146,7 @@
                     money: money,
                     email: email,
                 };
-                const postData = await fetch("http://localhost:8080/create", {
+                const postData = await fetch("https://manage-money-1ysn.onrender.com/create", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -196,7 +196,7 @@
                             const mn = document.getElementById("soTienTra").value;
                             const id = document.getElementById("idTra").value;
                             const put = await fetch(
-                                `http://localhost:8080/update/${id}/${mn}`,
+                                `https://manage-money-1ysn.onrender.com/update/${id}/${mn}`,
                                 {
                                     method: "PUT",
                                 }
@@ -213,7 +213,7 @@
                 remindBtn.textContent = "Remind";
                 remindBtn.className = "btn btn-info ml-2";
                 remindBtn.onclick = async () => {
-                    const post = await fetch(`http://localhost:8080/remind/${user.id}`);
+                    const post = await fetch(`https://manage-money-1ysn.onrender.com/remind/${user.id}`);
                     const reminded = await post.json();
                     if (reminded.code == 200) {
                         alert("Đã nhắc nhở: " + user.nameUser);
