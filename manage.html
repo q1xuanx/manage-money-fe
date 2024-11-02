@@ -5,9 +5,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Quản lý chi tiêu</title>
+    <link rel="icon" href="/money-order.png" type="image/x-icon" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous" />
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" />
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
@@ -19,7 +20,7 @@
         sans-serif;
     ">
     <nav class="navbar navbar-expand bg-body-tertiary">
-        <div class="container-fluid">
+        <div class="container-fluid mr-auto">
             <div class="collapse navbar-collapse">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
@@ -27,6 +28,13 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="manage.html">Manage</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="my-2 my-lg-0">
+                <ul class="navbar-nav" id="nav-item-login">
+                    <li class="nav-item">
+                        <a class="nav-link" href="login.html">Login</a>
                     </li>
                 </ul>
             </div>
@@ -53,10 +61,17 @@
             <p id="totals">Tổng số tiền:</p>
         </div>
     </main>
-    <footer class="container d-flex justify-content-center">
-        <blockquote class="blockquote">
-            <p>Hoàng Nhân @ 2024</p>
-        </blockquote>
+    <footer class="py-2 my-3">
+        <div class="container justify-content-center align-items-center border-bottom border-top">
+            <div class="row">
+                <div class="col">
+                    <p><strong>nhanphmhoang@gmail.com</strong></p>
+                </div>
+                <div class="col text-right">
+                    <p>Manage Money @ 2024</p>
+                </div>
+            </div>
+        </div>
     </footer>
     <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -128,45 +143,97 @@
     </div>
     <script>
         async function loadData() {
-            const response = await fetch("https://manage-money-1ysn.onrender.com/");
-            const result = await response.json();
-            refreshTable(result.data);
-            const getTotal = await fetch("https://manage-money-1ysn.onrender.com/totals");
-            const totals = await getTotal.json();
-            const total = document.getElementById("totals");
-            total.textContent = "Tổng số tiền: " + totals.data;
-        }
-        document.getElementById("addUserButton").addEventListener("click", async () => {
-            var userName = document.getElementById("userName").value;
-            var email = document.getElementById("emailUser").value;
-            var money = document.getElementById("moneyUser").value;
-            if (userName && email && money) {
-                const dataSend = {
-                    nameUser: userName,
-                    money: money,
-                    email: email,
-                };
-                const postData = await fetch("https://manage-money-1ysn.onrender.com/create", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify(dataSend),
-                });
-                const res = await postData.json;
-                if (postData.code == 200) {
-                    alert("Thêm dữ liệu thành công");
-                }
-                $("#addUserModal").modal("hide");
-                loadData();
-                document.getElementById("userName").value = "";
+            const token = sessionStorage.getItem("token");
+            const user = sessionStorage.getItem("userData");
+            console.log(user);
+            if (!user) {
+                window.location = "login.html";
             } else {
-                alert("Thiếu dữ liệu");
+                const getUl = document.getElementById("nav-item-login");
+                getUl.innerHTML = "";
+                const li = document.createElement("li");
+                li.classList = "nav-item";
+                const btnLogout = document.createElement("button");
+                btnLogout.classList = "btn btn-info";
+                btnLogout.textContent = "Logout";
+                btnLogout.addEventListener("click", () => {
+                    sessionStorage.clear();
+                    window.location = "index.html";
+                });
+                li.appendChild(btnLogout);
+                getUl.appendChild(li);
+
+                const response = await fetch(`https://v2money.onrender.com/${user}`, {
+                    method: "GET",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+                if (response.status == 403) {
+                    sessionStorage.clear();
+                    window.location = "login.html";
+                    return;
+                }
+                const result = await response.json();
+                refreshTable(result.data);
+
+                const getTotal = await fetch(`https://v2money.onrender.com/totals/${user}`, {
+                    method: "GET",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+                const totals = await getTotal.json();
+                const total = document.getElementById("totals");
+                total.textContent = "Tổng số tiền: " + totals.data;
             }
-        });
+        }
+
+        document
+            .getElementById("addUserButton")
+            .addEventListener("click", async () => {
+                var userName = document.getElementById("userName").value;
+                var email = document.getElementById("emailUser").value;
+                var money = document.getElementById("moneyUser").value;
+                const user = sessionStorage.getItem("userData");
+
+                const token = sessionStorage.getItem("token");
+                if (userName && email && money) {
+                    const dataSend = {
+                        nameUser: userName,
+                        money: money,
+                        email: email,
+                        idAccount: user,
+                    };
+                    const postData = await fetch("https://v2money.onrender.com/create", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${token}`,
+                        },
+                        body: JSON.stringify(dataSend),
+                    });
+                    if (postData.status == 403) {
+                        sessionStorage.clear();
+                        window.location = "login.html";
+                        return;
+                    }
+                    const res = await postData.json();
+                    if (postData.ok) {
+                        alert("Thêm dữ liệu thành công");
+                    }
+                    $("#addUserModal").modal("hide");
+                    loadData();
+                    document.getElementById("userName").value = "";
+                } else {
+                    alert("Thiếu dữ liệu");
+                }
+            });
+
         function refreshTable(users) {
             const tableBody = document.getElementById("userTableBody");
             tableBody.innerHTML = "";
+            const token = sessionStorage.getItem("token");
             users.forEach((user) => {
                 const row = document.createElement("tr");
                 const idCell = document.createElement("td");
@@ -196,11 +263,19 @@
                             const mn = document.getElementById("soTienTra").value;
                             const id = document.getElementById("idTra").value;
                             const put = await fetch(
-                                `https://manage-money-1ysn.onrender.com/update/${id}/${mn}`,
+                                `https://v2money.onrender.com/update/${id}/${mn}`,
                                 {
-                                    method: "PUT",
+                                    method: "PATCH",
+                                    headers: {
+                                        Authorization: `Bearer ${token}`,
+                                    },
                                 }
                             );
+                            if (put.status == 403) {
+                                sessionStorage.clear();
+                                window.location = "login.html";
+                                return;
+                            }
                             const updated = await put.json();
                             if (updated.code == 200) {
                                 alert("Update thành công");
@@ -213,7 +288,20 @@
                 remindBtn.textContent = "Remind";
                 remindBtn.className = "btn btn-info ml-2";
                 remindBtn.onclick = async () => {
-                    const post = await fetch(`https://manage-money-1ysn.onrender.com/remind/${user.id}`);
+                    const post = await fetch(
+                        `https://v2money.onrender.com/remind/${user.id}`,
+                        {
+                            method: "GET",
+                            headers: {
+                                Authorization: `Bearer ${token}`,
+                            },
+                        }
+                    );
+                    if (post.status == 403) {
+                        sessionStorage.clear();
+                        window.location = "login.html";
+                        return;
+                    }
                     const reminded = await post.json();
                     if (reminded.code == 200) {
                         alert("Đã nhắc nhở: " + user.nameUser);
@@ -230,6 +318,7 @@
                 tableBody.appendChild(row);
             });
         }
+
         window.onload = loadData;
     </script>
 </body>
