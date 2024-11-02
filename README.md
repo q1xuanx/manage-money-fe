@@ -5,9 +5,9 @@
 - 🎨 **CSS**
 - 🅱️ **Bootstrap**
 - ⚙️ **JavaScript Vanilla**
-- For request, it delay 50s or more because i used free server for demo
 ## 🌐 Demo
 You can check out the live demo here: [🔗 Live Demo](https://roaring-pudding-f3daf4.netlify.app/)
+* For request, it delay 50s or more because i used free server for demo
 ### 📞 Contact
 If you have any questions, feel free to reach out:
 - 📧 **Email**: nhanphmhoang@gmail.com
