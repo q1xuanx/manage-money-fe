@@ -90,6 +90,10 @@
                     });
                     const data = await response.json();
                     if (response.ok) {
+                        if (data.message == 'username or password incorrect'){
+                            alert(data.message);
+                            return;
+                        }
                         sessionStorage.setItem('token', data.message);
                         sessionStorage.setItem('userData', data.data);
                         window.location = "index.html";
