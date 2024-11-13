@@ -13,7 +13,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </head>
-
 <body class="container" style="
       font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
         Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue',
@@ -45,7 +44,7 @@
         <button class="btn btn-primary" data-toggle="modal" data-target="#addUserModal">
             Thêm Người Dùng
         </button>
-        <table class="table table-striped mt-3 table-responsive">
+        <table class="table table-striped mt-3 table-responsive border shadow rounded">
             <thead>
                 <tr>
                     <th>Id</th>
@@ -53,6 +52,7 @@
                     <th>Email</th>
                     <th>Số tiền</th>
                     <th>Ngày mượn</th>
+                    <th>Thao tác</th>
                 </tr>
             </thead>
             <tbody id="userTableBody"></tbody>
